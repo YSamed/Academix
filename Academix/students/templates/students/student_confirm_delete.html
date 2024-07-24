@@ -1,0 +1,10 @@
+
+{% block content %}
+  <h1>Öğrenciyi Sil</h1>
+  <p>{{ student.first_name }} {{ student.last_name }}'i silmek istediğinize emin misiniz?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Evet, sil</button>
+    <a href="{% url 'student-list' %}">Geri</a>
+  </form>
+{% endblock %}

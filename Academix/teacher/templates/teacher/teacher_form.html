@@ -1,0 +1,9 @@
+{% block content %}
+<h1 class="mt-5">{{ view.object.pk|default:"Yeni" }} Öğretmen</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a href="{% url 'teacher-list' %}" class="btn btn-secondary">Geri Dön</a>
+</form>
+{% endblock %}

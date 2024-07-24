@@ -1,0 +1,21 @@
+
+
+{% block content %}
+<h1 class="mt-5">{{ teacher.first_name }} {{ teacher.last_name }} Detayları</h1>
+<ul>
+    <li>Adı: {{ teacher.first_name }}</li>
+    <li>Soyadı: {{ teacher.last_name }}</li>
+    <li>Departman: {{ teacher.department.name }}</li>
+    <li>Verdiği Dersler: 
+        <ul>
+            {% for subject in teacher.subjects.all %}
+            <li>{{ subject.name }}</li>
+            {% empty %}
+            <li>Hiç ders bulunamadı.</li>
+            {% endfor %}
+        </ul>
+    </li>
+</ul>
+<a href="{% url 'teacher-update' teacher.pk %}" class="btn btn-warning btn-sm">Güncelle</a>
+<a href="{% url 'teacher-list' %}" class="btn btn-secondary btn-sm">Geri Dön</a>
+{% endblock %}

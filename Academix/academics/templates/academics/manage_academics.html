@@ -1,0 +1,24 @@
+{% block content %}
+  <h1>Fakülte, Bölüm ve Sınıf Yönetimi</h1>
+
+  <h2>Fakülte Ekle</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ faculty_form.as_p }}
+    <button type="submit">Fakülte Ekle</button>
+  </form>
+
+  <h2>Bölüm Ekle</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ department_form.as_p }}
+    <button type="submit">Bölüm Ekle</button>
+  </form>
+
+  <h2>Sınıf Ekle</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ class_form.as_p }}
+    <button type="submit">Sınıf Ekle</button>
+  </form>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% block content %}
+  <h1>Öğrenci Listesi</h1>
+  <a href="{% url 'student-create' %}">Yeni Öğrenci Ekle</a>
+  <ul>
+    {% for student in students %}
+      <li>
+        <a href="{% url 'student-detail' student.pk %}">{{ student.first_name }} {{ student.last_name }}</a>
+        <a href="{% url 'student-update' student.pk %}">Güncelle</a>
+        <a href="{% url 'student-delete' student.pk %}">Sil</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

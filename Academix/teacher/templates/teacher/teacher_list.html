@@ -1,0 +1,35 @@
+{% block content %}
+<h1 class="mt-5">Öğretmenler</h1>
+<a href="{% url 'teacher-create' %}" class="btn btn-success mb-3">Yeni Öğretmen Ekle</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Adı</th>
+            <th>Soyadı</th>
+            <th>Detay</th>
+            <th>Güncelle</th>
+            <th>Sil</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for teacher in teachers %}
+        <tr>
+            <td>{{ teacher.first_name }}</td>
+            <td>{{ teacher.last_name }}</td>
+            <td><a href="{% url 'teacher-detail' teacher.pk %}" class="btn btn-info btn-sm">Detay</a></td>
+            <td><a href="{% url 'teacher-update' teacher.pk %}" class="btn btn-warning btn-sm">Güncelle</a></td>
+            <td>
+                <form method="post" action="{% url 'teacher-delete' teacher.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">Hiç öğretmen bulunamadı.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
