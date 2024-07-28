@@ -1,7 +1,10 @@
 from django.urls import path
-from .views import (FacultyListView, DepartmentListView, ClassListView,FacultyDetailView, DepartmentDetailView, ClassDetailView,FacultyUpdateView, DepartmentUpdateView, ClassUpdateView,FacultyDeleteView, DepartmentDeleteView, ClassDeleteView,manage_academics)
+from .views import (index, FacultyListView, DepartmentListView, ClassListView,FacultyDetailView, DepartmentDetailView, ClassDetailView,FacultyUpdateView, DepartmentUpdateView, ClassUpdateView,FacultyDeleteView, DepartmentDeleteView, ClassDeleteView,manage_academics)
+
 
 urlpatterns = [
+
+    path('', index, name='index'),
     path('manage-academics/', manage_academics, name='manage-academics'),
 
     # Listeleme
@@ -23,4 +26,5 @@ urlpatterns = [
     path('faculty/<int:pk>/delete/', FacultyDeleteView.as_view(), name='faculty-delete'),
     path('department/<int:pk>/delete/', DepartmentDeleteView.as_view(), name='department-delete'),
     path('class/<int:pk>/delete/', ClassDeleteView.as_view(), name='class-delete'),
-]
+ ]
+

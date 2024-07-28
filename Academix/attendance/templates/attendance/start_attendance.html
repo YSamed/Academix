@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">Ders Yoklama Sistemi </h2>
+    <form id="attendance-form" method="post" action="{% url 'start-attendance' %}" class="shadow p-4 rounded bg-light">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="teacher" class="form-label">Öğretmen Seçin:</label>
+            <select name="teacher_id" id="teacher" class="form-select" onchange="loadSubjects(this.value)">
+                <option value="">Seçiniz</option>
+                {% for teacher in teachers %}
+                    <option value="{{ teacher.id }}">{{ teacher.first_name }} {{ teacher.last_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+  
+        <button type="submit" class="btn btn-primary mt-2 w-100">Yoklamayı Başlat</button>
+    </form>
+   
+    <div class="row mt-4">
+        <div class="col-md-6 mb-4">
+            <div class="card z-index-2 h-100">
+                <img src="{% static 'academics/assets/img/yoklama.jpg' %}" alt="Image placeholder" class="card-img-top">
+                <div class="card-header text-center border-0 pt-0 pt-lg-2 pb-4 pb-lg-3">
+                    <div class="d-flex justify-content-between">
+                        <a href="javascript:;" class="btn btn-sm btn-info mb-0 d-none d-lg-block">Ders Bilgisi</a>
+                        <a href="javascript:;" class="btn btn-sm btn-info mb-0 d-block d-lg-none"><i class="ni ni-collection"></i></a>
+                        <a href="javascript:;" class="btn btn-sm btn-dark float-right mb-0 d-none d-lg-block">Yoklamayı Başlat</a>
+                        <a href="javascript:;" class="btn btn-sm btn-dark float-right mb-0 d-block d-lg-none"><i class="ni ni-email-83"></i></a>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="row">
+                        <div class="col">
+                            <div class="d-flex justify-content-center">
+                                <div class="d-grid text-center">
+                                    <span class="text-lg font-weight-bolder">8</span>
+                                    <span class="text-sm opacity-8">Toplam Ders Sayısı</span>
+                                </div>
+                                <div class="d-grid text-center mx-4">
+                                    <span class="text-lg font-weight-bolder">10</span>
+                                    <span class="text-sm opacity-8">Hafta</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <h5 id="subject-name"><span class="font-weight-light"></span></h5>
+                        <div class="h6 font-weight-300" id="teacher-name">
+                            <i class="ni location_pin mr-2"></i>
+                        </div>
+                        <div>
+                            <i class="ni education_hat mr-2"></i>Pamukkale Üniversitesi
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card z-index-2 h-100">
+                <div id="qr-code-container" class="card-header text-center border-0 pt-0 pt-lg-2 pb-4 pb-lg-3">
+                    <h3 style="color: #ffffff;">QR Kod:</h3>
+                    <div id="qr-code-placeholder" class="img-fluid" style="max-width: 100%; height: auto; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; color: #333; padding: 20px;">
+                        QR kod burada görüntülenecek
+                    </div>
+                    <img id="qr-code-img" src="" alt="QR Code" class="img-fluid d-none" style="max-width: 100%; height: auto;">
+                    <p id="qr-code-password" class="mt-2" style="color:black;"></p>
+                </div>
+            </div>  
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('attendance-form');
+        const qrCodeImg = document.getElementById('qr-code-img');
+        const qrCodePassword = document.getElementById('qr-code-password');
+        const qrCodeContainer = document.getElementById('qr-code-container');
+        const qrCodePlaceholder = document.getElementById('qr-code-placeholder');
+        const subjectName = document.getElementById('subject-name');
+        const teacherName = document.getElementById('teacher-name');
+
+        const interval = 10000;
+        setInterval(loadQRCode, interval);
+
+        form.onsubmit = async function(event) {
+            event.preventDefault();
+            await updateQRCode();
+        };
+
+        async function loadQRCode() {
+            await updateQRCode();
+        }
+
+        async function updateQRCode() {
+            const formData = new FormData(form);
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                qrCodeImg.src = `data:image/png;base64,${data.qr_code}`;
+                qrCodePassword.textContent = `Şifre: ${data.password}`;
+                qrCodeContainer.style.display = 'block';
+                qrCodePlaceholder.classList.add('d-none');
+                qrCodeImg.classList.remove('d-none');
+                subjectName.textContent = data.subjects[0].name;
+                teacherName.innerHTML = `<i class="ni location_pin mr-2"></i>${data.teacher.first_name} ${data.teacher.last_name}`;
+            } else {
+                alert('QR kodu yenilenemedi.');
+            }
+        }
+    });
+</script>
+{% endblock %}

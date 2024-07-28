@@ -1,10 +1,30 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
-from .models import Faculty, Department, Class
+from .models import Faculty, Department, Class 
+from students.models import Student
+from teacher.models import Teacher
 from .forms import FacultyForm, DepartmentForm, ClassForm
 
-# Listeleme View'ları
+
+from django.shortcuts import render
+
+def index(request):
+    total_faculties = Faculty.objects.filter(is_deleted=False).count()
+    total_departments = Department.objects.filter(is_deleted=False).count()
+    total_students = Student.objects.filter(is_deleted=False).count()
+    total_teachers = Teacher.objects.filter(is_deleted=False).count()
+    teachers = Teacher.objects.filter(is_deleted=False)
+
+    context = {
+        'total_faculties': total_faculties,
+        'total_departments': total_departments,
+        'total_students': total_students,
+        'total_teachers': total_teachers,
+        'teachers': teachers,
+    }
+    return render(request, 'academics/index.html', context)
+
 class FacultyListView(ListView):
     model = Faculty
     template_name = 'academics/faculty_list.html'
@@ -13,6 +33,12 @@ class FacultyListView(ListView):
     def get_queryset(self):
         return Faculty.objects.filter(is_deleted=False)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['total_faculties'] = Faculty.objects.filter(is_deleted=False).count()
+        return context
+
+        
 class DepartmentListView(ListView):
     model = Department
     template_name = 'academics/department_list.html'
@@ -87,8 +113,7 @@ class ClassUpdateView(UpdateView):
     template_name = 'academics/class_form.html'
 
     def get_success_url(self):
-        # Burada 'department-detail' URL'sine yönlendirmek istiyorsanız, doğru PK'yi sağlamalısınız.
-        # Örneğin, sınıfın bağlı olduğu bölümün detayına yönlendirebiliriz:
+
         return reverse_lazy('department-detail', kwargs={'pk': self.object.department.pk})
 
 # Silme View'ları

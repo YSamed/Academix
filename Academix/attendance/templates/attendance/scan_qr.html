@@ -1,0 +1,65 @@
+<!-- scan_qr.html -->
+
+{% block content %}
+<h1>QR Kodunu Tara</h1>
+<form method="post" id="scanForm">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="student_id">Öğrenci:</label>
+        <select id="student_id" name="student_id" class="form-control" required>
+            <option value="">Seçiniz</option>
+            {% for student in students %}
+                <option value="{{ student.id }}">{{ student.first_name }} {{ student.last_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="qr_code">QR Kod:</label>
+        <input type="text" id="qr_code" name="qr_code" class="form-control">
+    </div>
+    <div class="form-group">
+        <label for="password">Şifre:</label>
+        <input type="text" id="password" name="password" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary">Gönder</button>
+</form>
+
+<script>
+    document.getElementById('scanForm').addEventListener('submit', function(event) {
+        event.preventDefault();  // Formun varsayılan gönderimini durdur
+
+        var formData = new FormData(this);
+        fetch('/attendance/scan-qr/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')  // CSRF koruması için token
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('Yoklama başarılı!');
+            } else {
+                alert('Hata: ' + data.status);
+            }
+        });
+    });
+
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+{% endblock %}
