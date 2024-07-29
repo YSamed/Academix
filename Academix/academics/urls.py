@@ -1,16 +1,25 @@
 from django.urls import path
-from .views import (index, FacultyListView, DepartmentListView, ClassListView,FacultyDetailView, DepartmentDetailView, ClassDetailView,FacultyUpdateView, DepartmentUpdateView, ClassUpdateView,FacultyDeleteView, DepartmentDeleteView, ClassDeleteView,manage_academics)
+from .views import (index, manage,faculty_form, department_form, class_form, subjects_form ,get_subjects,FacultyListView, DepartmentListView, ClassListView,FacultyDetailView, DepartmentDetailView, ClassDetailView,FacultyUpdateView, DepartmentUpdateView, ClassUpdateView,FacultyDeleteView, DepartmentDeleteView, ClassDeleteView,)
 
 
 urlpatterns = [
 
     path('', index, name='index'),
-    path('manage-academics/', manage_academics, name='manage-academics'),
+    path('manage', manage, name='manage'),
+    path('faculty_form/', faculty_form, name='faculty_form'),
+    path('department_form/', department_form, name='department_form'),
+    path('class_form/', class_form , name='class_form'),
+    path ('subjects_form/', subjects_form, name=('subjects_form')),
+    path('get_subjects/', get_subjects, name='get_subjects'),
+
+
+
 
     # Listeleme
-    path('faculties/', FacultyListView.as_view(), name='faculty-list'),
-    path('departments/', DepartmentListView.as_view(), name='department-list'),
-    path('classes/', ClassListView.as_view(), name='class-list'),
+    path('faculty_list/', FacultyListView.as_view(), name='faculty_list'),
+    path('department_list/', DepartmentListView.as_view(), name='department_list'),
+    path('class_list/', ClassListView.as_view(), name='class_list'),
+
 
     # Detay
     path('faculty/<int:pk>/', FacultyDetailView.as_view(), name='faculty-detail'),

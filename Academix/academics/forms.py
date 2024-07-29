@@ -7,24 +7,40 @@ class FacultyForm(forms.ModelForm):
     class Meta:
         model = Faculty
         fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),}
 
 class DepartmentForm(forms.ModelForm):
     class Meta:
-        model = Department
-        fields = ['name', 'faculty']
-
+        model = Department 
+        fields = ['faculty' , 'name']
+        widgets = {
+            'faculty': forms.Select(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),
+        }
 class ClassForm(forms.ModelForm):
     class Meta:
         model = Class
-        fields = ['name', 'department', 'subjects']
+        fields = ['department', 'name', 'subjects']
+        widgets = {
+            'department': forms.Select(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),
+            'subjects': forms.CheckboxSelectMultiple(attrs={'class': 'form-control'}),
+        }
+    
+
 
 class SubjectForm(forms.ModelForm):
     class Meta:
         model = Subject
-        fields = ['name', 'department', 'code', 'total_classes']
+        fields = ['department','name', 'code', 'total_classes']
+        widgets = {
+            'department': forms.Select(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),
+            'code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Code'}),
+            'total_classes': forms.TextInput(attrs={'class': 'form-control' }),
+
+            
+        }
 
 
-
-FacultyFormSet = formset_factory(FacultyForm, extra=1)
-DepartmentFormSet = formset_factory(DepartmentForm, extra=1)
-ClassFormSet = formset_factory(ClassForm, extra=1)

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mt-8">
+        <!-- Fakülte Card -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header mx-4 p-3 text-center">
+                    <div class="icon icon-shape icon-lg bg-gradient-primary shadow text-center border-radius-lg">
+                        <i class="fas fa-university opacity-10"></i>
+                    </div>
+                </div>
+                <div class="card-body pt-0 p-4 text-center">
+                    <h6 class="text-center mb-0">Fakülte</h6>
+                    <hr class="horizontal dark my-3">
+                    <div class="d-flex flex-column gap-3">
+                        <!-- Fakülte Ekle Butonu -->
+                        <a href="{% url 'faculty_form' %}" class="btn btn-primary">Fakülte Ekle</a>
+                        <!-- Fakülteler Listesi Butonu -->
+                        <a href="{% url 'faculty_list' %}" class="btn btn-secondary">Fakülteler Listesi</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Bölüm Card -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header mx-4 p-3 text-center">
+                    <div class="icon icon-shape icon-lg bg-gradient-primary shadow text-center border-radius-lg">
+                        <i class="fas fa-building opacity-10"></i>
+                    </div>
+                </div>
+                <div class="card-body pt-0 p-4 text-center">
+                    <h6 class="text-center mb-0">Bölüm</h6>
+                    <hr class="horizontal dark my-3">
+                    <div class="d-flex flex-column gap-3">
+                        <!-- Bölüm Ekle Butonu -->
+                        <a href="{% url 'department_form' %}" class="btn btn-primary">Bölüm Ekle</a>
+                        <!-- Bölümler Listesi Butonu -->
+                        <a href="{% url 'department_list' %}" class="btn btn-secondary">Bölümler Listesi</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Sınıf Card -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header mx-4 p-3 text-center">
+                    <div class="icon icon-shape icon-lg bg-gradient-primary shadow text-center border-radius-lg">
+                        <i class="fas fa-chalkboard-teacher opacity-10"></i>
+                    </div>
+                </div>
+                <div class="card-body pt-0 p-4 text-center">
+                    <h6 class="text-center mb-0">Sınıflar</h6>
+                    <hr class="horizontal dark my-3">
+                    <div class="d-flex flex-column gap-3">
+                        <!-- Sınıf Ekle Butonu -->
+                        <a href="{% url 'class_form' %}" class="btn btn-primary">Sınıf Ekle</a>
+                        <!-- Sınıflar Listesi Butonu -->
+                        <a href="{% url 'class_list' %}" class="btn btn-secondary">Sınıflar Listesi</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Ders Card -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header mx-4 p-3 text-center">
+                    <div class="icon icon-shape icon-lg bg-gradient-primary shadow text-center border-radius-lg">
+                        <i class="fas fa-book opacity-10"></i>
+                    </div>
+                </div>
+                <div class="card-body pt-0 p-4 text-center">
+                    <h6 class="text-center mb-0">Ders</h6>
+                    <hr class="horizontal dark my-3">
+                    <div class="d-flex flex-column gap-3">
+                        <!-- Ders Ekle Butonu -->
+                        <a href="{% url 'subjects_form' %}" class="btn btn-primary">Ders Ekle</a>
+                        <!-- Dersler Listesi Butonu -->
+                        <a href="" class="btn btn-secondary">Dersler Listesi</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

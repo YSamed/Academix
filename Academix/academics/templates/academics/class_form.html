@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<h2 class="text-center mt-4" style="color: white;">Sınıf Ekle</h2>
+<div class="container mt-6">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <form method="post" action="{% url 'class_form' %}" id="class-form">
+                {% csrf_token %}
+                <div class="card z-index-2 h-100">
+                    <img src="{% static 'academics/assets/img/yoklama.jpg' %}" alt="Image placeholder" class="card-img-top">
+                    <div class="card-body pt-0">
+                        <div class="text-center mt-4">
+                            <h5 id="subject-name"><span class="font-weight-light"></span></h5>
+                            <div class="h6 font-weight-300" id="teacher-name">
+                                <i class="ni location_pin mr-2"></i>
+                            </div>
+                            <div>
+                                <i class="ni education_hat mr-2"></i>Pamukkale Üniversitesi
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label for="id_department">Departman:</label>
+                            {{ class_form.department }}
+                            <br><br>
+                            <label for="id_name">Sınıf Adı:</label>
+                            {{ class_form.name }}
+                        </div>
+                        <div class="mt-4" id="subjects-container">
+                            <!-- Subject field will be dynamically updated -->
+                        </div>
+                        <div class="card-header text-center border-0 pt-0 pt-lg-2 pb-4 pb-lg-3">
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="{% url 'manage' %}" class="btn btn-sm btn-info mb-0 d-none d-lg-block">Geri Dön</a>
+                                <a href="{% url 'manage' %}" class="btn btn-sm btn-info mb-0 d-block d-lg-none"><i class="ni ni-collection"></i></a>
+                                <button type="submit" class="btn btn-sm btn-dark mb-0">Sınıfı Ekle</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#id_department').change(function() {
+            var departmentId = $(this).val();
+            $.ajax({
+                url: '{% url "get_subjects" %}',
+                data: {
+                    'department_id': departmentId
+                },
+                success: function(data) {
+                    var subjects = data.subjects;
+                    var $subjectsContainer = $('#subjects-container');
+                    $subjectsContainer.empty();
+                    if (subjects.length > 0) {
+                        $subjectsContainer.append('<label for="id_subjects">Dersler:</label>');
+                        $.each(subjects, function(index, subject) {
+                            $subjectsContainer.append(
+                                '<div><input type="checkbox" name="subjects" value="' + subject.id + '" id="subject-' + subject.id + '"><label for="subject-' + subject.id + '">' + subject.name + '</label></div>'
+                            );
+                        });
+                    } else {
+                        $subjectsContainer.append('<p>Seçili departman için ders bulunmuyor.</p>');
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
