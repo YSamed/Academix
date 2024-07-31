@@ -1,14 +1,16 @@
-from pyexpat.errors import messages
+from django.contrib import messages
+from django.forms import BaseModelForm
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.generic import ListView, DetailView, UpdateView, DeleteView
+from django.views.generic import ListView, DetailView, UpdateView, DeleteView ,CreateView
 from django.urls import reverse, reverse_lazy
-from .models import Faculty, Department, Class, Subject 
+from django.http import HttpResponse, JsonResponse
+from django.db.models import Count, Q
+from django.core.paginator import Paginator
+from .models import Faculty, Department, Class, Subject
 from students.models import Student
 from teacher.models import Teacher
-from .forms import FacultyForm, DepartmentForm, ClassForm , SubjectForm
-from django.shortcuts import render
-from django.http import JsonResponse
-from django.db.models import Count, Q
+from .forms import FacultyForm, DepartmentForm, ClassForm, SubjectForm ,ClassSubjectForm
+from django.template.loader import render_to_string
 
 
 def index(request):
@@ -49,15 +51,21 @@ def faculty_form(request):
     
     return render(request, 'academics/faculty_form.html', {'faculty_form': faculty_form})
 
-def department_form(request):
+def department_form(request, faculty_id=None):
     if request.method == 'POST':
-        department_form =  DepartmentForm(request.POST)
+        department_form = DepartmentForm(request.POST, faculty_id=faculty_id)
         if department_form.is_valid():
-            department_form.save()
+            department = department_form.save(commit=False)
+            if faculty_id:
+                faculty = get_object_or_404(Faculty, id=faculty_id)
+                department.faculty = faculty
+            department.save()
             return redirect('manage')
     else:
-        department_form = DepartmentForm()
-    return render(request, 'academics/department_form.html', {'department_form':department_form})
+        # GET isteği ise
+        department_form = DepartmentForm(faculty_id=faculty_id)
+
+    return render(request, 'academics/department_form.html', {'department_form': department_form})
 
 def class_form(request):
     if request.method == 'POST':
@@ -80,18 +88,40 @@ def get_subjects(request):
 
     return JsonResponse({'subjects': subjects_list})
 
-def subjects_form(request):
-    if request.method == 'POST':
-        subjects_form = SubjectForm(request.POST)
-        if subjects_form.is_valid():
-            subjects_form.save()
-            return redirect('manage')  # 'manage' URL'sinin tanımlandığından emin olun
-    else:
-        subjects_form = SubjectForm()
+def delete_department(request, pk ):
+    department = get_object_or_404(Department , pk = pk)
+    department.is_deleted = True
+    department.save()
+    messages.success(request, f"{department.name} başarıyla silindi.")
+
+    return redirect(reverse ('faculty-detail',kwargs={'pk':department.faculty.pk}))
+
+# Ekleme 
+class AddSubjectView(CreateView):
+    form_class = SubjectForm
+    template_name = 'academics/subject_form.html'
     
-    return render(request, 'academics/subjects_form.html', {'subjects_form': subjects_form})
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['class_id'] = self.kwargs.get('class_id', None)  # class_id'yi formun kwargs'ına ekleyin
+        return kwargs
+
+    def form_valid(self, form):
+        # Formu kaydedin
+        SubjectForm = form.save()
+        
+        # class_id parametresini URL'den al
+        class_id = self.kwargs.get('class_id', None)
+        
+        # class_id varsa, detay sayfasına yönlendir
+        if class_id:
+            return redirect('class_detail', pk=class_id)
+        
+        # class_id yoksa, başka bir URL'ye yönlendirin
+        return redirect('manage')
 
 
+# Listeleme 
 class FacultyListView(ListView):
     model = Faculty
     template_name = 'faculties/faculty_list.html'
@@ -100,35 +130,28 @@ class FacultyListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         faculties = Faculty.objects.filter(is_deleted=False)
-        total_faculties = Faculty.objects.filter(is_deleted=False).count()
-        total_departments = Department.objects.count()
-        total_teachers = Teacher.objects.count()
-        total_students = Student.objects.count()
+        total_faculties = faculties.count()
+        total_departments = Department.objects.filter(is_deleted=False).count()
+        total_teachers = Teacher.objects.filter(is_deleted=False).count()
+        total_students = Student.objects.filter(is_deleted=False).count()
 
         for faculty in faculties:
-            faculty.department_count = Department.objects.filter(faculty=faculty).count()
-            faculty.teacher_count = Teacher.objects.filter(department__faculty=faculty).count()
-            faculty.student_count = Student.objects.filter(classroom__department__faculty=faculty).count()
-            if total_departments > 0:
-                faculty.department_percentage = (faculty.department_count / total_departments) * 100
-            else:
-                faculty.department_percentage = 0
-            if total_teachers > 0:
-                faculty.teacher_percentage = (faculty.teacher_count / total_teachers) * 100
-            else:
-                faculty.teacher_percentage = 0
-            if total_students > 0:
-                faculty.student_percentage = (faculty.student_count / total_students) * 100
-            else:
-                faculty.student_percentage = 0
+            faculty.department_count = Department.objects.filter(faculty=faculty, is_deleted=False).count()
+            faculty.teacher_count = Teacher.objects.filter(department__faculty=faculty, is_deleted=False).count()
+            faculty.student_count = Student.objects.filter(classroom__department__faculty=faculty, is_deleted=False).count()
+            faculty.department_percentage = (faculty.department_count / total_departments) * 100 if total_departments > 0 else 0
+            faculty.teacher_percentage = (faculty.teacher_count / total_teachers) * 100 if total_teachers > 0 else 0
+            faculty.student_percentage = (faculty.student_count / total_students) * 100 if total_students > 0 else 0
         
-        context['total_faculties'] = total_faculties
-        context['total_departments'] = total_departments
-        context['total_teachers'] = total_teachers
-        context['total_students'] = total_students
-        context['faculties'] = faculties
+        context.update({
+            'total_faculties': total_faculties,
+            'total_departments': total_departments,
+            'total_teachers': total_teachers,
+            'total_students': total_students,
+            'faculties': faculties
+        })
         return context
-    
+  
 class DepartmentListView(ListView):
     model = Department
     template_name = 'department_list.html'
@@ -138,15 +161,18 @@ class DepartmentListView(ListView):
         queryset = Department.objects.filter(is_deleted=False).annotate(
             teacher_count=Count('teachers', filter=Q(teachers__is_deleted=False)),
             subject_count=Count('subjects', filter=Q(subjects__is_deleted=False))  # Eklenen alan
+
         )
         return queryset
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         total_departments = Department.objects.filter(is_deleted=False).count()
         total_teachers = Teacher.objects.filter(is_deleted=False).count()
         total_students = Student.objects.filter(is_deleted=False).count()
-        total_subjects = Subject.objects.filter(is_deleted=False).count()  # Doğru isimlendirme
+        total_subjects = Subject.objects.filter(is_deleted=False).count()  
+
 
         for department in context['departments']:
             # Öğrenci sayısını hesaplayalım
@@ -175,15 +201,14 @@ class DepartmentListView(ListView):
         context['total_departments'] = total_departments
         context['total_teachers'] = total_teachers
         context['total_students'] = total_students
-        context['total_subjects'] = total_subjects  # Yazım hatası düzeltildi
+        context['total_subjects'] = total_subjects 
 
         return context
 
-        return context
 class ClassListView(ListView):
     model = Class
     template_name = 'academics/class_list.html'
-    context_object_name = 'classes'  # Bu ismin HTML'de doğru kullanıldığından emin olun
+    context_object_name = 'classes'  
 
     def get_queryset(self):
         return Class.objects.filter(is_deleted=False)
@@ -192,7 +217,10 @@ class ClassListView(ListView):
         context = super().get_context_data(**kwargs)
         context['total_classes'] = Class.objects.filter(is_deleted=False).count()
         return context
-# Detay View'ları
+
+
+
+# Detay
 class FacultyDetailView(DetailView):
     model = Faculty
     template_name = 'academics/faculty_detail.html'
@@ -201,33 +229,104 @@ class FacultyDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         faculty = self.get_object()
-        context['departments'] = faculty.departments.filter(is_deleted=False)
+
+        departments = faculty.departments.filter(is_deleted=False)
+        departments_count = departments.count()
+
+        faculty_students_count = Student.objects.filter(classroom__department__in=departments, is_deleted=False).count()
+
+        faculties_teachers_count = Teacher.objects.filter(department__in=departments, is_deleted=False).count()
+
+        # Sayfalama
+        paginator = Paginator(departments, 3) 
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        departments_with_classes = []
+        for department in page_obj:
+            classes = department.classes.filter(is_deleted=False).order_by('name')  
+            # Her sınıf için öğrenci sayısını hesaplama
+            classes_with_students_count = classes.annotate(total_students=Count('students'))
+            departments_with_classes.append({
+                'department': department,
+                'classes': classes_with_students_count
+            })
+
+        context.update({
+            'departments_with_classes': departments_with_classes,
+            'departments_count': departments_count,
+            'faculty_students_count': faculty_students_count,
+            'faculties_teachers_count': faculties_teachers_count,
+            'page_obj': page_obj,
+        })
         return context
+
 
 class DepartmentDetailView(DetailView):
     model = Department
-    template_name = 'academics/department_detail.html'
+    template_name = 'department/department_detail.html'
     context_object_name = 'department'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         department = self.get_object()
-        context['classes'] = department.classes.filter(is_deleted=False)
+
+        subjects = department.subjects.filter(is_deleted=False)
+
+        context.update({
+            'subjects': subjects,
+        })
         return context
 
 class ClassDetailView(DetailView):
     model = Class
     template_name = 'academics/class_detail.html'
-    context_object_name = 'class'
+    context_object_name = 'class_detail'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Sınıfa ait öğrencileri al
         class_instance = self.get_object()
-        context['students'] = class_instance.students.filter(is_deleted=False)
-        # Sınıfa ait dersleri al
-        context['subjects'] = class_instance.subjects.filter(is_deleted=False)
+
+        subjects = class_instance.subjects.filter(is_deleted=False)
+        subjects_paginator = Paginator(subjects, 3)  
+        subjects_page_number = self.request.GET.get('subjects_page', 1)
+        subjects_page_obj = subjects_paginator.get_page(subjects_page_number)
+
+        students = Student.objects.filter(classroom=class_instance, is_deleted=False)
+        students_paginator = Paginator(students, 2)  
+        students_page_number = self.request.GET.get('students_page', 1)
+        students_page_obj = students_paginator.get_page(students_page_number)
+
+        department = class_instance.department
+        students_count = students.count()
+        teachers_count = Teacher.objects.filter(department=department, is_deleted=False).count()
+
+        form = ClassSubjectForm(class_instance=class_instance)
+
+        context.update({
+            'department': department,
+            'class_instance': class_instance,
+            'students_count': students_count,
+            'teachers_count': teachers_count,
+            'subjects_page_obj': subjects_page_obj,
+            'students_page_obj': students_page_obj,
+            'form': form,
+        })
         return context
+
+    def post(self, request, *args, **kwargs):
+        class_instance = self.get_object()
+        form = ClassSubjectForm(request.POST, class_instance=class_instance)
+
+        if form.is_valid():
+            subject = form.cleaned_data['subject']
+            class_instance.subjects.add(subject)
+
+            return redirect(reverse('class_detail', kwargs={'pk': class_instance.pk}))
+        
+        context = self.get_context_data(form=form)
+        return self.render_to_response(context)
+
 
 # Güncelleme View'ları
 class FacultyUpdateView(UpdateView):
@@ -236,13 +335,13 @@ class FacultyUpdateView(UpdateView):
     template_name = 'academics/faculty_form.html'
     success_url = reverse_lazy('faculty-list')
 
+
 class DepartmentUpdateView(UpdateView):
     model = Department
     form_class = DepartmentForm
     template_name = 'academics/department_form.html'
-    
-    def get_success_url(self):
-        return reverse_lazy('faculty-detail', kwargs={'pk': self.object.faculty.pk})
+
+
 
 class ClassUpdateView(UpdateView):
     model = Class
@@ -252,6 +351,9 @@ class ClassUpdateView(UpdateView):
     def get_success_url(self):
 
         return reverse_lazy('department-detail', kwargs={'pk': self.object.department.pk})
+
+
+
 
 # Silme View'ları
 class FacultyDeleteView(DeleteView):

@@ -23,6 +23,7 @@ class Class(models.Model):
 
     def __str__(self):
         return f"{self.department.name} {self.name}" if self.department else self.name
+    
 class Subject(models.Model):
     name = models.CharField(max_length=100)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='subjects')

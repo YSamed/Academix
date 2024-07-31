@@ -1,6 +1,5 @@
 from django import forms
 from .models import Faculty, Department, Class, Subject
-from django.forms import formset_factory
 
 
 class FacultyForm(forms.ModelForm):
@@ -18,6 +17,13 @@ class DepartmentForm(forms.ModelForm):
             'faculty': forms.Select(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        faculty_id = kwargs.pop('faculty_id', None)
+        super().__init__(*args, **kwargs)
+        if faculty_id:
+            self.fields['faculty'].initial = faculty_id
+
 class ClassForm(forms.ModelForm):
     class Meta:
         model = Class
@@ -28,8 +34,6 @@ class ClassForm(forms.ModelForm):
             'subjects': forms.CheckboxSelectMultiple(attrs={'class': 'form-control'}),
         }
     
-
-
 class SubjectForm(forms.ModelForm):
     class Meta:
         model = Subject
@@ -38,9 +42,27 @@ class SubjectForm(forms.ModelForm):
             'department': forms.Select(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),
             'code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Code'}),
-            'total_classes': forms.TextInput(attrs={'class': 'form-control' }),
-
-            
+            'total_classes': forms.TextInput(attrs={'class': 'form-control' }),    
         }
 
+    def __init__(self, *args, **kwargs):
+            class_id = kwargs.pop('class_id', None)
+            super().__init__(*args, **kwargs)
+            self.class_id = class_id
 
+class ClassSubjectForm(forms.Form):
+    subject = forms.ModelChoiceField(
+        queryset=Subject.objects.none(), 
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=True
+    )
+
+    def __init__(self, *args, **kwargs):
+        class_instance = kwargs.pop('class_instance', None)
+        super().__init__(*args, **kwargs)
+
+        if class_instance:
+            department = class_instance.department
+            self.fields['subject'].queryset = Subject.objects.filter(department=department, is_deleted=False)
+        else:
+            self.fields['subject'].queryset = Subject.objects.none()

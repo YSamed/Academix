@@ -62,10 +62,11 @@
                                 {% for department in departments %}
                                 <tr>
                                     <td>
-                                        <div class="d-flex px-2 py-1">
-                                            <div class="d-flex flex-column justify-content-center">
-                                                <h6 class="mb-0 text-sm">{{ department.name }}</h6>
+                                        <div class="d-flex align-items-center">
+                                            <div class="icon icon-shape bg-gradient-danger shadow-primary text-center rounded-circle me-2">
+                                                <i class="fas fa-building text-lg opacity-10" aria-hidden="true"></i>
                                             </div>
+                                            <span>{{ department.name }}</span>
                                         </div>
                                     </td>
                                     <td class="align-middle text-center">
