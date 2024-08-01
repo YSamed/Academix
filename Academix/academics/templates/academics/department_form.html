@@ -2,11 +2,17 @@
 {% load static %}
 
 {% block content %}
-<h2 class="text-center mt-4" style="color: white;">Bölüm Ekle</h2>
+<h2 class="text-center mt-4" style="color: white;">
+    {% if department_form.instance.pk %}
+        Bölümü Güncelle
+    {% else %}
+        Bölüm Ekle
+    {% endif %}
+</h2>
 <div class="container mt-6">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
-            <form method="post" action="{% url 'department_form' %}">
+            <form method="post" action="{% if department_form.instance.pk %}{% url 'department-edit' department_form.instance.pk %}{% elif faculty_id %}{% url 'department-create-with-faculty' faculty_id=faculty_id %}{% else %}{% url 'department-create' %}{% endif %}">
                 {% csrf_token %}
                 <div class="card z-index-2 h-100">
                     <img src="{% static 'academics/assets/img/yoklama.jpg' %}" alt="Image placeholder" class="card-img-top">
@@ -21,19 +27,26 @@
                             </div>
                         </div>
                         <div class="mt-4">
-                            {{ department_form.as_p }}
+                            {{ form.as_p }} <!-- Formu burada render et -->
                         </div>
                         <div class="card-header text-center border-0 pt-0 pt-lg-2 pb-4 pb-lg-3">
                             <div class="d-flex justify-content-between mt-4">
                                 <a href="{% url 'manage' %}" class="btn btn-sm btn-info mb-0 d-none d-lg-block">Geri Dön</a>
                                 <a href="{% url 'manage' %}" class="btn btn-sm btn-info mb-0 d-block d-lg-none"><i class="ni ni-collection"></i></a>
-                                <button type="submit" class="btn btn-sm btn-dark float-right mb-0 d-none d-lg-block">Bölümü Ekle</button>
+                                <button type="submit" class="btn btn-sm btn-dark float-right mb-0 d-none d-lg-block">
+                                    {% if department_form.instance.pk %}
+                                        Bölümü Güncelle
+                                    {% else %}
+                                        Bölümü Ekle
+                                    {% endif %}
+                                </button>
                                 <button type="submit" class="btn btn-sm btn-dark float-right mb-0 d-block d-lg-none"><i class="ni ni-email-83"></i></button>
                             </div>
                         </div>
                     </div>
                 </div>
             </form>
+            
         </div>
     </div>
 </div>

@@ -1,13 +1,26 @@
 from django import forms
+from django.shortcuts import get_object_or_404
 from .models import Faculty, Department, Class, Subject
-
 
 class FacultyForm(forms.ModelForm):
     class Meta:
         model = Faculty
         fields = ['name']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),}
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        faculty_id = kwargs.pop('faculty_id', None)
+        super().__init__(*args, **kwargs)
+        if faculty_id:
+            # Fakülte nesnesini alıp formu başlat
+            try:
+                faculty = Faculty.objects.get(id=faculty_id)
+                self.fields['name'].initial = faculty.name
+            except Faculty.DoesNotExist:
+                pass  # Fakülte bulunamazsa, herhangi bir şey yapma
+
 
 class DepartmentForm(forms.ModelForm):
     class Meta:
@@ -19,10 +32,10 @@ class DepartmentForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        faculty_id = kwargs.pop('faculty_id', None)
-        super().__init__(*args, **kwargs)
-        if faculty_id:
-            self.fields['faculty'].initial = faculty_id
+            faculty_id = kwargs.pop('faculty_id', None)
+            super().__init__(*args, **kwargs)
+            if faculty_id:
+                self.fields['faculty'].initial = faculty_id
 
 class ClassForm(forms.ModelForm):
     class Meta:
@@ -49,6 +62,8 @@ class SubjectForm(forms.ModelForm):
             class_id = kwargs.pop('class_id', None)
             super().__init__(*args, **kwargs)
             self.class_id = class_id
+
+
 
 class ClassSubjectForm(forms.Form):
     subject = forms.ModelChoiceField(

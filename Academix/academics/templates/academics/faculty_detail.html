@@ -6,9 +6,6 @@
 <div class="container-fluid py-4">
 
 
-
-    
-
     <div class="row">
         <!-- Fakülte Detay Kartı -->
         <div class="col-xl-8 col-sm-12 mb-xl-0 mb-4">
@@ -125,23 +122,25 @@
                             <div class="d-flex flex-column">
                                 <h6 class="mb-3 text-sm">{{ department_with_classes.department.name }}</h6>
                                 <span class="mb-2 text-xs">Öğretim Görevlisi Sayısı: <span class="text-dark font-weight-bold ms-sm-2">{{ department_with_classes.department.teachers.count }}</span></span>
-                                <span class="mb-2 text-xs">Öğrenci Sayısı: <span class="text-dark ms-sm-2 font-weight-bold">{{ department_with_classes.classes.count}}</span></span>
-
+                                <span class="mb-2 text-xs">Öğrenci Sayısı: <span class="text-dark ms-sm-2 font-weight-bold">{{ department_with_classes.classes.count }}</span></span>
+                    
                                 <!-- Sınıf Butonları -->
                                 <div class="mt-1">
                                     {% for cls in department_with_classes.classes %}
-                                    <a class="btn btn-primary btn-sm me-1 mb-1" href="{% url 'class_detail' cls.id %}">{{ cls.name }}</a>
+                                    <a class="btn btn-primary btn-sm me-1 mb-1" href="{% url 'class-detail' cls.id %}">{{ cls.name }}</a>
                                     {% empty %}
                                     <p class="text-muted">Bu bölümde sınıf bulunmuyor.</p>
                                     {% endfor %}
                                 </div>
                             </div>
+                    
                             <div class="ms-auto text-end">
-                                <a class="btn btn-link text-dark px-3 mb-0" data-bs-toggle="modal" data-bs-target="#departmentModal">
+                                <!-- Düzenleme Butonu -->
+                                <a class="btn btn-link text-dark px-3 mb-0" href="#" data-bs-toggle="modal" data-bs-target="#departmentModal" data-department-id="{{ epartment.id }}">
                                     <i class="fas fa-pencil-alt text-dark me-2" aria-hidden="true"></i> Düzenle
                                 </a>
-                                <a class="btn btn-link text-danger text-gradient px-3 mb-0" href="{% url 'department-delete' department_with_classes.department.id %}"><i class="far fa-trash-alt me-2"></i>Sil</a>
-                            </div>
+                                <a class="btn btn-link text-danger text-gradient px-3 mb-0" href="{% url 'department-delete' department_with_classes.department.id %}"><i class="far fa-trash-alt me-2"></i>Sil</a>                            </div>
+                            
                         </li>
                         {% empty %}
                         <li class="list-group-item border-0 d-flex p-4 mb-2 bg-gray-100 border-radius-lg">
@@ -151,6 +150,7 @@
                         </li>
                         {% endfor %}
                     </ul>
+                    
 
                     <!-- Pagination Controls -->
                     <nav aria-label="Page navigation">
@@ -204,18 +204,17 @@
                 <div class="card-body p-3">
                     <div class="row">
                         <div class="col-md-6 mb-md-0 mb-2">
-                            <a class="btn bg-gradient-dark w-100" href="{% url 'department_form' faculty.id %}">
+                            <a class="btn bg-gradient-dark w-100" href="{% url 'department-create-with-faculty' faculty_id=faculty_id %}">
                                 <i class="fas fa-plus"></i>&nbsp;&nbsp;Bölüm Ekle
-                            </a>
-                            
-                            
+                            </a>  
                         </div>
                         <div class="col-md-6 mb-md-0 mb-2">
-                    
-                         <a class="btn bg-gradient-primary w-100" href="">
-                                    <i class="fas fa-plus"></i>&nbsp;&nbsp; Fakülte Bilgilerin 
-                                </a>
-                            </div>
+                            <a class="btn bg-gradient-primary w-100" href="{% url 'faculty-update' faculty.pk %}">
+                                <i class="fas fa-edit"></i>&nbsp;&nbsp; Fakülte Bilgilerini Güncelle
+                            </a>
+                            
+                        </div>
+                        
                         <div class="col-md-6 mb-md-0 mb-2">
                             <a class="btn bg-gradient-info w-100" href="">
                                 <i class="fas fa-plus"></i>&nbsp;&nbsp;Öğrenci Ekle
@@ -261,35 +260,7 @@
                         </a>
                     </div>
                 </div>
-            </div>
-            
-            
+            </div>    
     </div>
 </div>
-
-<!-- Modal -->
-<div class="modal fade" id="departmentModal" tabindex="-1" aria-labelledby="departmentModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="departmentModalLabel">Departman Güncelle</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form method="post" id="departmentForm">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <button type="submit" class="btn btn-primary">Güncelle</button>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
-
 {% endblock %}

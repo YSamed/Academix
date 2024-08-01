@@ -1,16 +1,14 @@
 from django.contrib import messages
-from django.forms import BaseModelForm
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, DetailView, UpdateView, DeleteView ,CreateView
 from django.urls import reverse, reverse_lazy
-from django.http import HttpResponse, JsonResponse
+from django.http import  JsonResponse
 from django.db.models import Count, Q
 from django.core.paginator import Paginator
 from .models import Faculty, Department, Class, Subject
 from students.models import Student
 from teacher.models import Teacher
 from .forms import FacultyForm, DepartmentForm, ClassForm, SubjectForm ,ClassSubjectForm
-from django.template.loader import render_to_string
 
 
 def index(request):
@@ -40,16 +38,28 @@ def manage(request):
     
     return render(request, 'academics/manager.html', {'faculty_form': faculty_form})
 
-def faculty_form(request):
-    if request.method == 'POST':
-        faculty_form = FacultyForm(request.POST)
-        if faculty_form.is_valid():
-            faculty_form.save()
-            return redirect('manage')
+def faculty_form(request, pk=None):
+    if pk:
+        # Düzenleme işlemi için mevcut faculty nesnesini al
+        faculty = get_object_or_404(Faculty, pk=pk)
+        if request.method == 'POST':
+            form = FacultyForm(request.POST, instance=faculty)
+            if form.is_valid():
+                form.save()
+                return redirect('manage')
+        else:
+            form = FacultyForm(instance=faculty)
     else:
-        faculty_form = FacultyForm()
+        # Yeni faculty ekleme işlemi
+        if request.method == 'POST':
+            form = FacultyForm(request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect('manage')
+        else:
+            form = FacultyForm()
     
-    return render(request, 'academics/faculty_form.html', {'faculty_form': faculty_form})
+    return render(request, 'academics/faculty_form.html', {'form': form})
 
 def department_form(request, faculty_id=None):
     if request.method == 'POST':
@@ -96,6 +106,7 @@ def delete_department(request, pk ):
 
     return redirect(reverse ('faculty-detail',kwargs={'pk':department.faculty.pk}))
 
+
 # Ekleme 
 class AddSubjectView(CreateView):
     form_class = SubjectForm
@@ -119,6 +130,35 @@ class AddSubjectView(CreateView):
         
         # class_id yoksa, başka bir URL'ye yönlendirin
         return redirect('manage')
+
+# academics/views.py
+
+from django.urls import reverse
+
+class DepartmentCreateView(CreateView):
+    model = Department
+    form_class = DepartmentForm
+    template_name = 'academics/department_form.html'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        faculty_id = self.kwargs.get('faculty_id')
+        if faculty_id:
+            kwargs['faculty_id'] = faculty_id
+        return kwargs
+
+    def form_valid(self, form):
+        faculty_id = self.kwargs.get('faculty_id')
+        if faculty_id:
+            form.instance.faculty_id = faculty_id
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        faculty_id = self.kwargs.get('faculty_id')
+        if faculty_id:
+            # Fakülte detay sayfasına yönlendir ÇALIŞMIYOR
+            return reverse('faculty-detail', kwargs={'pk': faculty_id})
+        return reverse('department-list')  # Fakülte ID'si yoksa departman listesine yönlendir
 
 
 # Listeleme 
@@ -220,7 +260,13 @@ class ClassListView(ListView):
 
 
 
+
+
+
+
 # Detay
+# academics/views.py
+
 class FacultyDetailView(DetailView):
     model = Faculty
     template_name = 'academics/faculty_detail.html'
@@ -229,23 +275,22 @@ class FacultyDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         faculty = self.get_object()
-
+        
+        # Fetch departments
         departments = faculty.departments.filter(is_deleted=False)
         departments_count = departments.count()
-
         faculty_students_count = Student.objects.filter(classroom__department__in=departments, is_deleted=False).count()
-
         faculties_teachers_count = Teacher.objects.filter(department__in=departments, is_deleted=False).count()
-
-        # Sayfalama
-        paginator = Paginator(departments, 3) 
+        
+        # Pagination
+        paginator = Paginator(departments, 3)
         page_number = self.request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-
+        
+        # Prepare data
         departments_with_classes = []
         for department in page_obj:
-            classes = department.classes.filter(is_deleted=False).order_by('name')  
-            # Her sınıf için öğrenci sayısını hesaplama
+            classes = department.classes.filter(is_deleted=False).order_by('name')
             classes_with_students_count = classes.annotate(total_students=Count('students'))
             departments_with_classes.append({
                 'department': department,
@@ -258,6 +303,7 @@ class FacultyDetailView(DetailView):
             'faculty_students_count': faculty_students_count,
             'faculties_teachers_count': faculties_teachers_count,
             'page_obj': page_obj,
+            'faculty_id': faculty.pk,  # Add this line to pass faculty_id to the template
         })
         return context
 
@@ -281,7 +327,7 @@ class DepartmentDetailView(DetailView):
 class ClassDetailView(DetailView):
     model = Class
     template_name = 'academics/class_detail.html'
-    context_object_name = 'class_detail'
+    context_object_name = 'class-detail'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -322,10 +368,15 @@ class ClassDetailView(DetailView):
             subject = form.cleaned_data['subject']
             class_instance.subjects.add(subject)
 
-            return redirect(reverse('class_detail', kwargs={'pk': class_instance.pk}))
+            return redirect(reverse('class-detail', kwargs={'pk': class_instance.pk}))
         
         context = self.get_context_data(form=form)
         return self.render_to_response(context)
+
+
+
+
+
 
 
 # Güncelleme View'ları
@@ -333,15 +384,18 @@ class FacultyUpdateView(UpdateView):
     model = Faculty
     form_class = FacultyForm
     template_name = 'academics/faculty_form.html'
-    success_url = reverse_lazy('faculty-list')
+    success_url = reverse_lazy('manage')
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        # Burada formun geçerli olduğunu kontrol edebilir veya ek işlemler yapabilirsiniz
+        return response
 
 class DepartmentUpdateView(UpdateView):
     model = Department
     form_class = DepartmentForm
-    template_name = 'academics/department_form.html'
-
-
+    template_name = 'academics/department_form_modal.html'
+    success_url = reverse_lazy('department-list')
 
 class ClassUpdateView(UpdateView):
     model = Class

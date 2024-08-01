@@ -232,7 +232,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form method="post" action="{% url 'class_detail' pk=class_instance.pk %}">
+          <form method="post" action="{% url 'class-detail' pk=class_instance.pk %}">
             {% csrf_token %}
             {{ form.as_p }}
             <button type="submit" class="btn btn-primary">Ders Ekle</button>
