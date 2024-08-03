@@ -85,6 +85,44 @@
                 </div>
             </div>
         </div>
+                <!-- Öğrenci Card -->
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card">
+                        <div class="card-header mx-4 p-3 text-center">
+                            <div class="icon icon-shape icon-lg bg-gradient-primary shadow text-center border-radius-lg">
+                                <i class="fas fa-book opacity-10"></i>
+                            </div>
+                        </div>
+                        <div class="card-body pt-0 p-4 text-center">
+                            <h6 class="text-center mb-0">Öğrenci Kaydı</h6>
+                            <hr class="horizontal dark my-3">
+                            <div class="d-flex flex-column gap-3">
+                                
+                                <a href="{% url 'student-create' %}" class="btn btn-primary">Öğrenci Ekle</a>
+                                
+                                <a href="{% url 'student-list'%}" class="btn btn-secondary">Öğrenci Listesi</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                        <!-- Öğretemen Card -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header mx-4 p-3 text-center">
+                    <div class="icon icon-shape icon-lg bg-gradient-primary shadow text-center border-radius-lg">
+                        <i class="fas fa-book opacity-10"></i>
+                    </div>
+                </div>
+                <div class="card-body pt-0 p-4 text-center">
+                    <h6 class="text-center mb-0">Öğretmen Kaydı</h6>
+                    <hr class="horizontal dark my-3">
+                    <div class="d-flex flex-column gap-3">
+                        <a href="{% url 'add-subject' %}" class="btn btn-primary">Ders Ekle</a>
+                        <a href="" class="btn btn-secondary">Dersler Listesi</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

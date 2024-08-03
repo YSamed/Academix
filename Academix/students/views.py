@@ -20,6 +20,10 @@ class StudentDetailView(DetailView):
     template_name = 'students/student_detail.html'
     context_object_name = 'student'
 
+
+
+
+
 class StudentCreateView(CreateView):
     model = Student
     form_class = StudentForm
@@ -28,8 +32,12 @@ class StudentCreateView(CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(self.request, 'Öğrenci başarıyla oluşturuldu.')
+        messages.success(self.request, 'Öğrenci başarıyla kaydedildi .')
         return response
+
+
+
+
 
 class StudentUpdateView(UpdateView):
     model = Student
