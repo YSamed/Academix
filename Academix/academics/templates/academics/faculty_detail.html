@@ -3,9 +3,9 @@
 
 {% block content %}
 
+
+
 <div class="container-fluid py-4">
-
-
     <div class="row">
         <!-- Fakülte Detay Kartı -->
         <div class="col-xl-8 col-sm-12 mb-xl-0 mb-4">
@@ -104,14 +104,7 @@
                 
                     <!-- Mesaj Alanı -->
                     <div class="d-flex flex-column flex-grow-1 ms-3">
-                        {% if messages %}
-                        {% for message in messages %}
-                        <div class="alert alert-warning alert-dismissible fade show mb-1" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                        {% endfor %}
-                        {% endif %}
+
                     </div>
                 </div>
                 
@@ -133,13 +126,19 @@
                                     {% endfor %}
                                 </div>
                             </div>
-                    
                             <div class="ms-auto text-end">
                                 <!-- Düzenleme Butonu -->
-                                <a class="btn btn-link text-dark px-3 mb-0" href="#" data-bs-toggle="modal" data-bs-target="#departmentModal" data-department-id="{{ epartment.id }}">
+                                <a href="{% url 'department-update' department_with_classes.department.pk %}" class="btn btn-link text-dark px-3 mb-0">
                                     <i class="fas fa-pencil-alt text-dark me-2" aria-hidden="true"></i> Düzenle
                                 </a>
-                                <a class="btn btn-link text-danger text-gradient px-3 mb-0" href="{% url 'department-delete' department_with_classes.department.id %}"><i class="far fa-trash-alt me-2"></i>Sil</a>                            </div>
+                                
+                            
+                                {% if department_with_classes.department.pk %}
+                                <a class="btn btn-link text-danger text-gradient px-3 mb-0" href="{% url 'department-delete' department_with_classes.department.pk %}" onclick="return confirm('Bu bölümü silmek istediğinizden emin misiniz?');">
+                                    <i class="far fa-trash-alt me-2"></i> Sil
+                                </a>
+                                {% endif %}
+                            </div>
                             
                         </li>
                         {% empty %}
@@ -216,12 +215,12 @@
                         </div>
                         
                         <div class="col-md-6 mb-md-0 mb-2">
-                            <a class="btn bg-gradient-info w-100" href="">
+                            <a class="btn bg-gradient-info w-100" href="{% url 'students:student-create' %}">
                                 <i class="fas fa-plus"></i>&nbsp;&nbsp;Öğrenci Ekle
                             </a>
                         </div>
                         <div class="col-md-6 mb-md-0 mb-2">
-                            <a class="btn bg-gradient-success w-100" href="">
+                            <a class="btn bg-gradient-success w-100" href="{% url 'teachers:teacher-create' %}">
                                 <i class="fas fa-plus"></i>&nbsp;&nbsp;Öğretmen Ekle
                             </a>
                         </div>
@@ -247,7 +246,7 @@
                                 <img src="{% static 'academics/assets/img/anasayfa_2.jpg' %}" class="d-block w-100 rounded" alt="...">
                             </div>
                             <div class="carousel-item">
-                                <img src="{% static 'academics/assets/img/anasayfa.jpg' %}" class="d-block w-100 rounded" alt="...">
+                                <img src="{% static 'academics/assets/img/anasayfa_3.jpg' %}" class="d-block w-100 rounded" alt="...">
                             </div>
                         </div>
                         <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-bs-slide="prev">
@@ -263,4 +262,10 @@
             </div>    
     </div>
 </div>
+
+
+
+
+
+
 {% endblock %}

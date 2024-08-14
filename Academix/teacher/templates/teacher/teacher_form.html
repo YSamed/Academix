@@ -1,9 +1,88 @@
+{% extends "base.html" %}
+
 {% block content %}
-<h1 class="mt-5">{{ view.object.pk|default:"Yeni" }} Öğretmen</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Kaydet</button>
-    <a href="{% url 'teacher-list' %}" class="btn btn-secondary">Geri Dön</a>
-</form>
+
+<nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" data-scroll="false">
+  <div class="container-fluid py-1 px-3">
+      <nav aria-label="breadcrumb">
+          <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
+              <li class="breadcrumb-item text-sm">
+                  <a class="opacity-5 text-white" href="{% url 'index' %}">Anasayfa</a>
+              </li>
+              <li class="breadcrumb-item text-sm text-white">
+                  <a class="opacity-5 text-white" href="{% url 'manage' %}">Yönetici Sistemi</a>
+              </li>
+              <li class="breadcrumb-item text-sm text-white active" aria-current="page">Öğretmen Ekle</li>
+          </ol>
+          <h6 class="font-weight-bolder text-white mb-0">Öğretmen Ekle </h6>
+      </nav>
+  </div>
+</nav>
+
+
+
+
+
+<div class="container-fluid py-4 mt-10">
+    <div class="row">
+<div class="col-md-8">
+    <div class="card">
+      <div class="card-header pb-0">
+        <div class="d-flex align-items-center">
+          <p class="mb-0">Yeni Öğrenci Kaydı</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <form method="post" action="{% url 'teachers:teacher-create' %}">
+          {% csrf_token %}
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="{{ form.username.id_for_label }}" class="form-control-label">Username</label>
+                {{ form.username }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="{{ form.password.id_for_label }}" class="form-control-label">Password</label>
+                {{ form.password }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="{{ form.password2.id_for_label }}" class="form-control-label">Confirm Password</label>
+                {{ form.password2 }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="{{ form.first_name.id_for_label }}" class="form-control-label">First name</label>
+                {{ form.first_name }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="{{ form.last_name.id_for_label }}" class="form-control-label">Last name</label>
+                {{ form.last_name }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="{{ form.employee_id.id_for_label }}" class="form-control-label">employee_id ID</label>
+                {{ form.employee_id }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="{{ form.department.id_for_label }}" class="form-control-label">Depaertment</label>
+                {{ form.department }}
+              </div>
+            </div>
+          </div>
+          <hr class="horizontal dark">
+          <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+      </div>
+    </div>
+</div>
 {% endblock %}

@@ -1,48 +1,70 @@
-<!-- scan_qr.html -->
+{% extends "base.html" %}
+
+{% load static %}
 
 {% block content %}
-<h1>QR Kodunu Tara</h1>
-<form method="post" id="scanForm">
-    {% csrf_token %}
-    <div class="form-group">
-        <label for="student_id">Öğrenci:</label>
-        <select id="student_id" name="student_id" class="form-control" required>
-            <option value="">Seçiniz</option>
-            {% for student in students %}
-                <option value="{{ student.id }}">{{ student.first_name }} {{ student.last_name }}</option>
-            {% endfor %}
-        </select>
+<nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl " id="navbarBlur" data-scroll="false">
+    <div class="container-fluid py-1 px-3">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
+          <li class="breadcrumb-item text-sm"><a class="opacity-5 text-white" href="{% url 'index'%}">Anasayfa</a></li>
+          <li class="breadcrumb-item text-sm text-white active" aria-current="page">Fakülteler</li>
+        </ol>
+        <h6 class="font-weight-bolder text-white mb-0">Fakülteler
+        </h6>
+      </nav>
     </div>
-    <div class="form-group">
-        <label for="qr_code">QR Kod:</label>
-        <input type="text" id="qr_code" name="qr_code" class="form-control">
-    </div>
-    <div class="form-group">
-        <label for="password">Şifre:</label>
-        <input type="text" id="password" name="password" class="form-control">
-    </div>
-    <button type="submit" class="btn btn-primary">Gönder</button>
-</form>
+  </nav>
+  
+
+<div class="container mt-4">
+    <h1 class="mb-4">QR Kodunu Tara</h1>
+    <form method="post" id="scanForm">
+        {% csrf_token %}
+        <!-- Öğrenci ID'sini gizli bir alanda saklayacağız -->
+        <input type="hidden" id="student_id" name="student_id" value="{{ student_id }}">
+        
+        <div class="form-group mt-3">
+            <label for="qr_code">QR Kod:</label>
+            <input type="text" id="qr_code" name="qr_code" class="form-control" placeholder="QR kodunu girin">
+        </div>
+        <div class="form-group mt-3">
+            <label for="password">Şifre:</label>
+            <input type="text" id="password" name="password" class="form-control" placeholder="Şifreyi girin">
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Gönder</button>
+    </form>
+</div>
 
 <script>
-    document.getElementById('scanForm').addEventListener('submit', function(event) {
-        event.preventDefault();  // Formun varsayılan gönderimini durdur
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sayfa yüklendiğinde öğrenci ID'sini al
+        var studentId = "{{ student_id }}";
+        document.getElementById('student_id').value = studentId;
 
-        var formData = new FormData(this);
-        fetch('/attendance/scan-qr/', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')  // CSRF koruması için token
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                alert('Yoklama başarılı!');
-            } else {
-                alert('Hata: ' + data.status);
-            }
+        document.getElementById('scanForm').addEventListener('submit', function(event) {
+            event.preventDefault();  // Formun varsayılan gönderimini durdur
+
+            var formData = new FormData(this);
+            fetch('{% url "scan-qr" %}', {  // URL adını Django URL adından alıyoruz
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')  // CSRF koruması için token
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Yoklama başarılı!');
+                } else {
+                    alert('Hata: ' + data.status);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Bir hata oluştu.');
+            });
         });
     });
 

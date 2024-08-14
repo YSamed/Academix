@@ -26,7 +26,8 @@
                 <td>
                     <form method="post" action="{% url 'class-delete' class.pk %}" style="display:inline;">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bu bölümü silmek istediğinizden emin misiniz?');">Sil</button>
+
                     </form>
                 </td>
             </tr>

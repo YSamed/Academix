@@ -29,12 +29,12 @@ class StudentForm(forms.ModelForm):
 
 
     def clean(self):
-        cleean_data = super().clean()
-        password = cleean_data.get('password')
-        password2 = cleean_data.get('password2')
+        clean_data = super().clean()
+        password = clean_data.get('password')
+        password2 = clean_data.get('password2')
 
         if password and password2 and password != password2:
-            self.add_error('Şifreler Eşleşmiyor ')
+            self.add_error('Şifreler Eşleşmiyor')
 
 
     def save(self, commit=True):

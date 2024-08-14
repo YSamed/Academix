@@ -14,28 +14,41 @@ class FacultyForm(forms.ModelForm):
         faculty_id = kwargs.pop('faculty_id', None)
         super().__init__(*args, **kwargs)
         if faculty_id:
-            # Fakülte nesnesini alıp formu başlat
             try:
                 faculty = Faculty.objects.get(id=faculty_id)
                 self.fields['name'].initial = faculty.name
             except Faculty.DoesNotExist:
-                pass  # Fakülte bulunamazsa, herhangi bir şey yapma
+                pass 
+
 
 
 class DepartmentForm(forms.ModelForm):
     class Meta:
         model = Department 
-        fields = ['faculty' , 'name']
+        fields = ['faculty', 'name']
         widgets = {
             'faculty': forms.Select(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}),
         }
 
     def __init__(self, *args, **kwargs):
-            faculty_id = kwargs.pop('faculty_id', None)
-            super().__init__(*args, **kwargs)
-            if faculty_id:
-                self.fields['faculty'].initial = faculty_id
+        faculty_id = kwargs.pop('faculty_id' , None)
+        department_id = kwargs.pop('department_id', None)
+        super().__init__(*args, **kwargs)
+        
+        if department_id:
+            try:
+                department = Department.objects.get(id=department_id)
+                self.fields['faculty'].initial = department.faculty.id
+                self.fields['name'].initial = department.name
+            except Department.DoesNotExist:
+                pass
+        if faculty_id:
+            self.fields['faculty'].initial = faculty_id
+
+
+
+
 
 class ClassForm(forms.ModelForm):
     class Meta:

@@ -3,52 +3,29 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2 class="text-center">Ders Yoklama Sistemi </h2>
-    <form id="attendance-form" method="post" action="{% url 'start-attendance' %}" class="shadow p-4 rounded bg-light">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="teacher" class="form-label">Öğretmen Seçin:</label>
-            <select name="teacher_id" id="teacher" class="form-select" onchange="loadSubjects(this.value)">
-                <option value="">Seçiniz</option>
-                {% for teacher in teachers %}
-                    <option value="{{ teacher.id }}">{{ teacher.first_name }} {{ teacher.last_name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-  
-        <button type="submit" class="btn btn-primary mt-2 w-100">Yoklamayı Başlat</button>
-    </form>
-   
-    <div class="row mt-4">
-        <div class="col-md-6 mb-4">
-            <div class="card z-index-2 h-100">
-                <img src="{% static 'academics/assets/img/yoklama.jpg' %}" alt="Image placeholder" class="card-img-top">
-                <div class="card-header text-center border-0 pt-0 pt-lg-2 pb-4 pb-lg-3">
-                    <div class="d-flex justify-content-between">
-                        <a href="javascript:;" class="btn btn-sm btn-info mb-0 d-none d-lg-block">Ders Bilgisi</a>
-                        <a href="javascript:;" class="btn btn-sm btn-info mb-0 d-block d-lg-none"><i class="ni ni-collection"></i></a>
-                        <a href="javascript:;" class="btn btn-sm btn-dark float-right mb-0 d-none d-lg-block">Yoklamayı Başlat</a>
-                        <a href="javascript:;" class="btn btn-sm btn-dark float-right mb-0 d-block d-lg-none"><i class="ni ni-email-83"></i></a>
+<div class="container mt-0">
+    <div class="d-flex justify-content-center align-items-center min-vh-100">
+        <div class="row mt-0">
+            <!-- Sol Kolon: Form ve Ders Bilgileri -->
+            <div class="col-md-12 mb-4">
+                <div class="card z-index-2 h-100">
+                    <img src="{% static 'academics/assets/img/img1.jpg' %}" alt="Image placeholder" class="card-img-top">
+                    <div class="card-body">
+                        <form id="attendance-form" method="post" action="{% url 'start-attendance' %}" class="shadow p-4 rounded bg-light">
+                            {% csrf_token %}
+                            <input type="hidden" name="teacher_id" value="{{ selected_teacher.id }}">
+                            {{ form.as_p }} 
+                        </form>
                     </div>
-                </div>
-                <div class="card-body pt-0">
-                    <div class="row">
-                        <div class="col">
-                            <div class="d-flex justify-content-center">
-                                <div class="d-grid text-center">
-                                    <span class="text-lg font-weight-bolder">8</span>
-                                    <span class="text-sm opacity-8">Toplam Ders Sayısı</span>
-                                </div>
-                                <div class="d-grid text-center mx-4">
-                                    <span class="text-lg font-weight-bolder">10</span>
-                                    <span class="text-sm opacity-8">Hafta</span>
-                                </div>
-                            </div>
+                    <div class="card-footer text-center border-0 pt-0 pt-lg-2 pb-4 pb-lg-3">
+                        <div class="d-flex justify-content-between">
+                            <a href="javascript:;" class="btn btn-sm btn-info mb-0 d-none d-lg-block">Yoklamayı Durdur</a>
+                            <a href="javascript:;" class="btn btn-sm btn-info mb-0 d-block d-lg-none"><i class="ni ni-collection"></i></a>
+                            <button type="submit" form="attendance-form" class="btn btn-sm btn-dark mb-0 d-none d-lg-block">Yoklamayı Başlat</button>
                         </div>
-                    </div>
+                    </div>               
                     <div class="text-center mt-4">
-                        <h5 id="subject-name"><span class="font-weight-light"></span></h5>
+                        <h5 id="subject-name" class="font-weight-light"></h5>
                         <div class="h6 font-weight-300" id="teacher-name">
                             <i class="ni location_pin mr-2"></i>
                         </div>
@@ -58,34 +35,44 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-6 mb-4">
-            <div class="card z-index-2 h-100">
-                <div id="qr-code-container" class="card-header text-center border-0 pt-0 pt-lg-2 pb-4 pb-lg-3">
-                    <h3 style="color: #ffffff;">QR Kod:</h3>
-                    <div id="qr-code-placeholder" class="img-fluid" style="max-width: 100%; height: auto; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; color: #333; padding: 20px;">
-                        QR kod burada görüntülenecek
+           
+            <!-- Sağ Kolon: QR Kod -->
+            <div class="col-md-12 mb-8">
+                <div class="card z-index-2 h-100 position-relative" >
+                    <div class="card-header text-center text-white bg-success bg-opacity-50">
+                        <h5 id="qr-subject-name" class="font-weight-light mb-0">Ders Adı Burada Görünecek</h5>
                     </div>
-                    <img id="qr-code-img" src="" alt="QR Code" class="img-fluid d-none" style="max-width: 100%; height: auto;">
-                    <p id="qr-code-password" class="mt-2" style="color:black;"></p>
+                    <div id="qr-code-container" class="card-body text-center border-0 pt-0 pt-lg-2 pb-4 pb-lg-3 bg-light bg-opacity-70">
+                        <div id="qr-code-placeholder" class="img-fluid" style="max-width: 100%; height: auto; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; color: #333; padding: 20px;">
+                            QR kod burada görüntülenecek
+                        </div>
+                        <img id="qr-code-img" src="" alt="QR Code" class="img-fluid d-none" style="max-width: 100%; height: auto;">
+                        <p id="qr-code-password" class="mt-2" style="color:black;"></p>
+                    </div>
                 </div>
-            </div>  
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('attendance-form');
         const qrCodeImg = document.getElementById('qr-code-img');
         const qrCodePassword = document.getElementById('qr-code-password');
         const qrCodeContainer = document.getElementById('qr-code-container');
         const qrCodePlaceholder = document.getElementById('qr-code-placeholder');
+        const qrSubjectName = document.getElementById('qr-subject-name');
         const subjectName = document.getElementById('subject-name');
         const teacherName = document.getElementById('teacher-name');
+        const formCard = form.closest('.card'); 
+        const qrCard = document.querySelector('#qr-code-container').closest('.card'); 
 
-        const interval = 10000;
-        setInterval(loadQRCode, interval);
+        qrCard.style.display = 'none';
+
+        const interval = 10000; 
+        const intervalId = setInterval(loadQRCode, interval);
 
         form.onsubmit = async function(event) {
             event.preventDefault();
@@ -110,8 +97,12 @@
                 qrCodeContainer.style.display = 'block';
                 qrCodePlaceholder.classList.add('d-none');
                 qrCodeImg.classList.remove('d-none');
-                subjectName.textContent = data.subjects[0].name;
+                qrSubjectName.textContent = data.subjects[0].name;
+                subjectName.textContent = data.subjects[0].name; 
                 teacherName.innerHTML = `<i class="ni location_pin mr-2"></i>${data.teacher.first_name} ${data.teacher.last_name}`;
+                
+                formCard.style.display = 'none';
+                qrCard.style.display = 'block';
             } else {
                 alert('QR kodu yenilenemedi.');
             }

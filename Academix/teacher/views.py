@@ -1,24 +1,25 @@
-from django.db.models.query import QuerySet
-from django.shortcuts import redirect
-from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse, reverse_lazy
+from django.views.generic import ListView, DetailView, CreateView, UpdateView 
+from django.contrib.auth.views import LoginView, LogoutView
 from teacher.models import Teacher
 from teacher.forms import TeacherForm
 from django.contrib import messages
 
 # Create your views here.
 
-
 class TeacherListViews(ListView):
     model = Teacher 
     template_name = 'teacher/teacher_list.html'
     context_object_name = 'teachers'
+    paginate_by = 7 
 
     def get_queryset(self):
         return Teacher.objects.filter(is_deleted=False)
     
 
-class TeacherDetailViews(DeleteView):
+class TeacherDetailViews(DetailView):
     model = Teacher
     template_name = 'teacher/taecher_detail.html'
     context_object_name = 'teaacher'
@@ -49,14 +50,25 @@ class TeacehrUpdateViews(UpdateView):
         return redirect(self.success_url)
 
 
-class TeacherDeleteView(DeleteView):
-    model = Teacher
-    template_name = 'teacher/teacher_confirm_delete.html'
-    success_url = reverse_lazy('teacher-list')
+def delete_teacher(request, pk):
+    teacher = get_object_or_404(Teacher, pk=pk)
+    teacher.is_deleted = True
+    teacher.save()
+    messages.success(request, f"{teacher.first_name} {teacher.last_name} başarıyla silindi.")
+    return redirect(reverse('teachers:teacher-list'))
 
-    def post(self, request, *args, **kwargs):
-        teacher = self.get_object()
-        teacher.is_deleted = True
-        teacher.save()
-        messages.success(request, 'Öğretmen başarıyla silindi.')
-        return redirect(self.success_url)
+
+class TeacherLoginView(LoginView):
+    template_name = 'teacher/login.html'
+
+    def get_redirect_url(self):
+        if self.request.user.is_authenticated:
+            if hasattr(self.request.user, 'teacher'):
+                return reverse_lazy('index') 
+            else:
+                messages.error(self.request, "Öğretmen paneline giriş yapmak için öğretmen olmalısınız.")
+                return reverse_lazy('teachers:login')  
+        return super().get_redirect_url()
+      
+class TeacherLogoutView(LogoutView):
+    next_page = reverse_lazy('index')

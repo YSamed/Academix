@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block content %}
+
 <h2 class="text-center mt-4" style="color: white;">Sınıf Ekle</h2>
 <div class="container mt-6">
     <div class="row justify-content-center">
@@ -9,7 +10,7 @@
             <form method="post" action="{% url 'class-create' %}" id="class-form">
                 {% csrf_token %}
                 <div class="card z-index-2 h-100">
-                    <img src="{% static 'academics/assets/img/yoklama.jpg' %}" alt="Image placeholder" class="card-img-top">
+                    <img src="{% static 'academics/assets/img/img1.jpg' %}" alt="Image placeholder" class="card-img-top">
                     <div class="card-body pt-0">
                         <div class="text-center mt-4">
                             <h5 id="subject-name"><span class="font-weight-light"></span></h5>

@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from academics.models import Class
+from academics.models import Class , Subject
 from students.models import Student
 from teacher.models import Teacher
 
@@ -11,12 +11,16 @@ class QRCode(models.Model):
     code = models.CharField(max_length=256)  # QR kodunun verisi
     password = models.CharField(max_length=6)  # 6 haneli şifre
     expires_at = models.DateTimeField()  # QR kodunun geçerlilik süresi
-    course = models.ForeignKey(Class, on_delete=models.CASCADE, related_name='qr_codes')  
+    subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='qr_codes')  
 
     def __str__(self):
-        return f'QR Code for {self.course.name} by {self.teacher} - Valid until {self.expires_at}'
+        course_name = self.subject.name if self.subject else 'No Course'
+        teacher_name = f"{self.teacher.first_name} {self.teacher.last_name}" if self.teacher else 'No Teacher'
+        return f"{course_name} - {teacher_name}"
+
+
 
     def is_valid(self):
         """ QR kodunun geçerli olup olmadığını kontrol eder. """

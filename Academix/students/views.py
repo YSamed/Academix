@@ -1,9 +1,12 @@
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
-from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.urls import reverse, reverse_lazy
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView 
+from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib import messages
 from students.models import Student
 from .forms import StudentForm
+from django.shortcuts import redirect
 
 # Create your views here.
 
@@ -20,10 +23,6 @@ class StudentDetailView(DetailView):
     template_name = 'students/student_detail.html'
     context_object_name = 'student'
 
-
-
-
-
 class StudentCreateView(CreateView):
     model = Student
     form_class = StudentForm
@@ -34,10 +33,6 @@ class StudentCreateView(CreateView):
         response = super().form_valid(form)
         messages.success(self.request, 'Öğrenci başarıyla kaydedildi .')
         return response
-
-
-
-
 
 class StudentUpdateView(UpdateView):
     model = Student
@@ -61,3 +56,21 @@ class StudentDeleteView(DeleteView):
         student.save()
         messages.success(request, 'Öğrenci başarıyla silindi.')
         return redirect(self.success_url)
+
+
+
+class StudentLoginView(LoginView):
+    template_name = 'students/login.html'
+
+    def get_redirect_url(self):
+        if self.request.user.is_authenticated:
+            if hasattr(self.request.user, 'student'):
+                return reverse_lazy('index') 
+            else:
+                messages.error(self.request, "Öğrenci paneline giriş yapmak için öğrenci olmalısınız.")
+                return reverse('students:login')
+        return super().get_redirect_url()
+
+        
+class StudentLogoutView(LogoutView):
+    next_page = reverse_lazy('students:login')

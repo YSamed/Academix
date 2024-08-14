@@ -2,9 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from academics.models import Department, Subject
 
-# Create your models here.
-
-
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100)
